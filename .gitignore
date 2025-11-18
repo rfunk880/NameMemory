@@ -1,0 +1,27 @@
+# Backend
+backend/api/config/database.php
+backend/uploads/photos/*
+backend/uploads/thumbnails/*
+!backend/uploads/photos/.gitkeep
+!backend/uploads/thumbnails/.gitkeep
+vendor/
+composer.lock
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
