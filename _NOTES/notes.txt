@@ -3,3 +3,11 @@ db - dbwor04cxcwgbg
 user - uidbfd2lnuuau
 pwd - zyqdf9v3muxt
 
+Email:
+Server - c1111634.sgvps.net
+SMTP Port - 465
+user - app@e-salesllc.com
+pwd - ^gig3m@;yoS3
+
+JWT secret - xL&VfH%8ZJZ0pMVy
+
