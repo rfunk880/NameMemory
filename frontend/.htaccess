@@ -6,6 +6,9 @@
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
 
+  # Don't rewrite static assets
+  RewriteCond %{REQUEST_URI} !^/assets/
+
   # Don't rewrite API requests
   RewriteCond %{REQUEST_URI} !^/api/
 
