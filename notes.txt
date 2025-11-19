@@ -1,0 +1,38 @@
+DEPLOYMENT NOTES
+=================
+
+Site URL: https://remember.e-salesllc.com
+
+CRITICAL: Make sure the following file structure is on SiteGround:
+
+public_html/
+├── api/
+│   ├── config/
+│   │   ├── database.php          ← MUST BE UPLOADED!
+│   │   ├── Database.php
+│   │   └── database.example.php
+│   ├── controllers/
+│   ├── middleware/
+│   ├── models/
+│   ├── utils/
+│   ├── .htaccess
+│   └── index.php
+├── uploads/
+│   ├── photos/
+│   └── thumbnails/
+└── (frontend files from dist/)
+
+Database Configuration:
+- Database Name: dbwor04cxcwgbg
+- Database User: uidbfd2lnuuau
+- Host: localhost
+
+Test API:
+1. Visit: https://remember.e-salesllc.com/api/
+2. Should see: {"error":"Endpoint not found"}
+3. This confirms API is working
+
+If you still get "Database configuration not found":
+- Re-upload backend/api/config/database.php to public_html/api/config/database.php
+- Check file permissions (should be 644)
+- Verify file exists via SiteGround File Manager
