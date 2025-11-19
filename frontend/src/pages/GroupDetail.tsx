@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Group, Person } from '../types';
+import type { Group, Person } from '../types';
 import { groupsApi, peopleApi } from '../services/api';
 import { getDisplayName } from '../utils/randomizer';
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Group } from '../types';
+import type { Group } from '../types';
 import { groupsApi } from '../services/api';
 
 export default function Dashboard() {
@@ -11,7 +11,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
-  const navigate = useNavigate();
 
   useEffect(() => {
     loadGroups();

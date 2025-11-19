@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { GroupShare } from '../types';
+import type { GroupShare } from '../types';
 import { sharingApi } from '../services/api';
 
 export default function SharesPage() {

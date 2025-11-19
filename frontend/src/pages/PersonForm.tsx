@@ -1,6 +1,7 @@
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect } from 'react';
+import type { FormEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Person, PersonFormData } from '../types';
+import type { PersonFormData } from '../types';
 import { peopleApi } from '../services/api';
 
 export default function PersonForm() {

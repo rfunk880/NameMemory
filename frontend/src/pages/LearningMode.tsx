@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Person } from '../types';
+import type { Person } from '../types';
 import { peopleApi } from '../services/api';
 import { getRandomizedPeople, getDisplayName } from '../utils/randomizer';
 
