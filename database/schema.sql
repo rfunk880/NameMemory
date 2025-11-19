@@ -15,8 +15,8 @@ CREATE TABLE IF NOT EXISTS users (
     INDEX idx_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Groups table
-CREATE TABLE IF NOT EXISTS groups (
+-- Groups table (using backticks because 'groups' is a reserved keyword)
+CREATE TABLE IF NOT EXISTS `groups` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     owner_id INT NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS people (
     thumbnail_url VARCHAR(500) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+    FOREIGN KEY (group_id) REFERENCES `groups`(id) ON DELETE CASCADE,
     INDEX idx_group (group_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS group_shares (
     shared_by_user_id INT NOT NULL,
     permission ENUM('view', 'edit') NOT NULL DEFAULT 'view',
     shared_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+    FOREIGN KEY (group_id) REFERENCES `groups`(id) ON DELETE CASCADE,
     FOREIGN KEY (shared_with_user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (shared_by_user_id) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE KEY unique_share (group_id, shared_with_user_id),
