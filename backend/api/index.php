@@ -53,13 +53,12 @@ require_once __DIR__ . '/controllers/ShareController.php';
 
 // Initialize database
 $database = new Database();
-$db = $database->getConnection();
 
 // Initialize controllers
-$authController = new AuthController($db);
-$groupController = new GroupController($db);
-$personController = new PersonController($db);
-$shareController = new ShareController($db);
+$authController = new AuthController($database);
+$groupController = new GroupController($database);
+$personController = new PersonController($database);
+$shareController = new ShareController($database);
 
 // Get request method and path
 $method = $_SERVER['REQUEST_METHOD'];
