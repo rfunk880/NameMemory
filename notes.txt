@@ -36,3 +36,28 @@ If you still get "Database configuration not found":
 - Re-upload backend/api/config/database.php to public_html/api/config/database.php
 - Check file permissions (should be 644)
 - Verify file exists via SiteGround File Manager
+
+CRITICAL FIX FOR BLANK PAGE (404 errors on JS files):
+=========================================================
+The blank page issue is caused by missing .htaccess file in public_html/
+
+IMMEDIATE ACTION REQUIRED:
+1. Upload frontend/.htaccess to public_html/.htaccess on SiteGround
+   - This file enables React Router SPA support
+   - Without it, the web server returns 404 for all routes
+
+2. Verify this file structure exists on SiteGround:
+   public_html/
+   ├── .htaccess          ← MUST BE UPLOADED FROM frontend/.htaccess!
+   ├── index.html
+   ├── assets/
+   │   ├── index-*.js
+   │   └── index-*.css
+   ├── api/
+   │   └── .htaccess      (different file, already exists)
+   └── uploads/
+
+3. After uploading .htaccess:
+   - Clear browser cache (Ctrl+Shift+Delete, clear everything)
+   - Hard refresh the page (Ctrl+F5)
+   - Site should now load properly at https://remember.e-salesllc.com
