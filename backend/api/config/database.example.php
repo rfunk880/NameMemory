@@ -23,8 +23,8 @@ define('SMTP_FROM', 'app@e-salesllc.com');
 define('SMTP_FROM_NAME', 'NameMemory App');
 
 // Application URL
-define('APP_URL', 'https://memory.e-salesllc.com');
-define('API_URL', 'https://memory.e-salesllc.com/api');
+define('APP_URL', 'https://remember.e-salesllc.com');
+define('API_URL', 'https://remember.e-salesllc.com/api');
 
 // Upload settings
 define('UPLOAD_MAX_SIZE', 10 * 1024 * 1024); // 10MB
