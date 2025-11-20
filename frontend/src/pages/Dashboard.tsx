@@ -18,11 +18,16 @@ export default function Dashboard() {
 
   const loadGroups = async () => {
     try {
+      console.log('Loading groups...');
       const data = await groupsApi.getAll();
-      setOwnedGroups(data.owned);
-      setSharedGroups(data.shared);
+      console.log('Groups loaded:', data);
+      setOwnedGroups(data.owned || []);
+      setSharedGroups(data.shared || []);
     } catch (error) {
       console.error('Failed to load groups:', error);
+      // Don't fail silently - show empty arrays
+      setOwnedGroups([]);
+      setSharedGroups([]);
     } finally {
       setLoading(false);
     }
@@ -33,10 +38,14 @@ export default function Dashboard() {
     if (!newGroupName.trim()) return;
 
     try {
-      await groupsApi.create(newGroupName);
+      const result = await groupsApi.create(newGroupName);
+      console.log('Group created successfully:', result);
+
       setNewGroupName('');
       setShowCreateModal(false);
-      loadGroups();
+
+      // Reload groups to show the new one
+      await loadGroups();
     } catch (error: any) {
       console.error('Group creation error:', error);
       const errorMessage = error.message || 'Failed to create group';
