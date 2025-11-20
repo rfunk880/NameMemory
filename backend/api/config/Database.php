@@ -17,9 +17,21 @@ class Database {
 
             $this->connection = new PDO($dsn, DB_USER, DB_PASS, $options);
         } catch (PDOException $e) {
-            http_response_code(500);
-            echo json_encode(['error' => 'Database connection failed']);
-            exit;
+            // Log the actual error for debugging
+            error_log("Database connection failed: " . $e->getMessage());
+
+            // Only send HTTP headers if we're in a web context
+            if (php_sapi_name() !== 'cli') {
+                http_response_code(500);
+                echo json_encode([
+                    'error' => 'Database connection failed',
+                    'message' => $e->getMessage()
+                ]);
+                exit;
+            } else {
+                // In CLI mode, throw the exception so we can see it
+                throw new Exception("Database connection failed: " . $e->getMessage());
+            }
         }
     }
 
