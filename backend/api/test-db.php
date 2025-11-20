@@ -32,7 +32,8 @@ echo "3. Database Tables:\n";
 $tables = ['users', 'groups', 'people', 'group_shares', 'password_resets'];
 foreach ($tables as $table) {
     try {
-        $result = $db->query("SHOW TABLES LIKE ?", [$table]);
+        // Use direct query instead of prepared statement for SHOW TABLES
+        $result = $db->getConnection()->query("SHOW TABLES LIKE '$table'");
         if ($result->rowCount() > 0) {
             echo "   ✓ Table '$table' exists\n";
         } else {
