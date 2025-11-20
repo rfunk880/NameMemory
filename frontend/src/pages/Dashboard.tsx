@@ -37,8 +37,10 @@ export default function Dashboard() {
       setNewGroupName('');
       setShowCreateModal(false);
       loadGroups();
-    } catch (error) {
-      alert('Failed to create group');
+    } catch (error: any) {
+      console.error('Group creation error:', error);
+      const errorMessage = error.message || 'Failed to create group';
+      alert(`Failed to create group: ${errorMessage}`);
     }
   };
 

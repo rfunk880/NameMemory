@@ -85,7 +85,12 @@ class GroupController {
         }
 
         try {
+            // Debug logging
+            error_log("Creating group - Name: " . $data['name'] . ", User ID: " . $currentUser['user_id']);
+
             $groupId = $this->groupModel->create($data['name'], $currentUser['user_id']);
+
+            error_log("Group created successfully - ID: " . $groupId);
 
             http_response_code(201);
             echo json_encode([
@@ -93,8 +98,15 @@ class GroupController {
                 'id' => $groupId
             ]);
         } catch (Exception $e) {
+            // Log the full error for debugging
+            error_log("Group creation failed: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
+
             http_response_code(500);
-            echo json_encode(['error' => 'Failed to create group: ' . $e->getMessage()]);
+            echo json_encode([
+                'error' => 'Failed to create group: ' . $e->getMessage(),
+                'details' => $e->getFile() . ':' . $e->getLine()
+            ]);
         }
     }
 
