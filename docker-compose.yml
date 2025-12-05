@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: namememory-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: namememory
+      POSTGRES_USER: namememory
+      POSTGRES_PASSWORD: namememory123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U namememory -d namememory"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Combined App (Frontend + Backend)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=/api
+    container_name: namememory-app
+    restart: unless-stopped
+    ports:
+      - "3000:8080"
+    environment:
+      - PGHOST=postgres
+      - PGPORT=5432
+      - PGDATABASE=namememory
+      - PGUSER=namememory
+      - PGPASSWORD=namememory123
+      - JWT_SECRET=local-development-secret-change-in-production
+      - UPLOAD_DIR=/uploads/
+    volumes:
+      - uploads_data:/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  uploads_data:
