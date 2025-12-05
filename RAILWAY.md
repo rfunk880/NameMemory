@@ -7,7 +7,7 @@ Deploy NameMemory to Railway at `name-memory.up.railway.app`.
 Single container serving:
 - **Frontend**: React SPA at `/`
 - **Backend API**: PHP at `/api/*`
-- **Uploads**: Static files at `/uploads/*`
+- **Uploads**: Persistent files at `/uploads/*` (Railway Volume)
 
 ## Quick Deploy
 
@@ -17,30 +17,36 @@ Single container serving:
 2. New Project → Deploy from GitHub repo
 3. Select this repository
 
-### 2. Add MySQL Database
+### 2. Add PostgreSQL Database
 
-1. In your project, click **New** → **Database** → **MySQL**
+1. In your project, click **New** → **Database** → **PostgreSQL**
 2. Railway auto-provisions and injects connection variables
 
 ### 3. Initialize Database
 
-1. Click the MySQL service → **Data** tab
+1. Click the PostgreSQL service → **Data** tab
 2. Run the SQL from `database/schema.sql`
 
-### 4. Configure Environment Variables
+### 4. Add Volume for Uploads
+
+1. Click your app service → **Settings** → **Volumes**
+2. Click **Add Volume**
+3. Mount path: `/uploads`
+4. This persists uploaded photos across deployments
+
+### 5. Configure Environment Variables
 
 In your service's **Variables** tab, add:
 
 ```bash
-# Required - auto-injected by Railway MySQL plugin
-MYSQL_HOST=${{MySQL.MYSQLHOST}}
-MYSQL_PORT=${{MySQL.MYSQLPORT}}
-MYSQL_DATABASE=${{MySQL.MYSQLDATABASE}}
-MYSQL_USER=${{MySQL.MYSQLUSER}}
-MYSQL_PASSWORD=${{MySQL.MYSQLPASSWORD}}
+# Database - auto-injected by Railway PostgreSQL plugin
+DATABASE_URL=${{Postgres.DATABASE_URL}}
 
 # Required - generate a secure random string
 JWT_SECRET=your-secure-random-string-minimum-32-chars
+
+# Upload directory (matches volume mount)
+UPLOAD_DIR=/uploads/
 
 # Optional - for password reset emails
 SMTP_HOST=smtp.example.com
@@ -51,7 +57,7 @@ SMTP_FROM=noreply@example.com
 SMTP_FROM_NAME=NameMemory
 ```
 
-### 5. Deploy
+### 6. Deploy
 
 Railway auto-deploys on push. Your app will be available at:
 - `https://name-memory.up.railway.app`
@@ -60,12 +66,9 @@ Railway auto-deploys on push. Your app will be available at:
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `MYSQL_HOST` | Yes | Database host |
-| `MYSQL_PORT` | Yes | Database port |
-| `MYSQL_DATABASE` | Yes | Database name |
-| `MYSQL_USER` | Yes | Database user |
-| `MYSQL_PASSWORD` | Yes | Database password |
+| `DATABASE_URL` | Yes | PostgreSQL connection URL (auto-injected) |
 | `JWT_SECRET` | Yes | JWT signing key (32+ chars) |
+| `UPLOAD_DIR` | Yes | Upload path (`/uploads/`) |
 | `SMTP_HOST` | No | Email server |
 | `SMTP_PORT` | No | Email port (587) |
 | `SMTP_USER` | No | Email username |
@@ -76,21 +79,27 @@ Railway auto-deploys on push. Your app will be available at:
 ## Local Development
 
 ```bash
-# Start all services
+# Start all services (PostgreSQL + App)
 docker-compose up -d
 
 # App available at http://localhost:3000
 # API at http://localhost:3000/api
 
+# View logs
+docker-compose logs -f
+
 # Stop
 docker-compose down
+
+# Reset database
+docker-compose down -v
 ```
 
 ## Troubleshooting
 
 ### Database Connection Failed
-- Verify MySQL service is running
-- Check variable references use `${{MySQL.VARNAME}}` syntax
+- Verify PostgreSQL service is running
+- Check `DATABASE_URL` is set correctly
 - Test with `/api/health` endpoint
 
 ### 502 Bad Gateway
@@ -99,12 +108,13 @@ docker-compose down
 - Ensure database schema is initialized
 
 ### File Uploads Not Working
-- Railway filesystem is ephemeral
-- For production, integrate external storage (S3, Cloudinary)
+- Verify Volume is mounted at `/uploads`
+- Check `UPLOAD_DIR=/uploads/` is set
+- Ensure Volume has sufficient space
 
-## File Storage Note
+## File Storage
 
-Railway's filesystem resets on each deploy. For persistent file uploads, consider:
-- AWS S3
-- Cloudinary
-- Railway Volumes (if available)
+Railway Volume provides persistent storage:
+- Photos survive deployments
+- Mounted at `/uploads`
+- Accessible via `/uploads/*` URLs

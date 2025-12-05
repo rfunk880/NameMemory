@@ -5,13 +5,23 @@
  * Falls back to defaults for local development
  */
 
-// Database configuration - Railway provides these via MySQL plugin or custom vars
-define('DB_HOST', getenv('MYSQL_HOST') ?: getenv('DB_HOST') ?: 'localhost');
-define('DB_NAME', getenv('MYSQL_DATABASE') ?: getenv('DB_NAME') ?: 'namememory');
-define('DB_USER', getenv('MYSQL_USER') ?: getenv('DB_USER') ?: 'root');
-define('DB_PASS', getenv('MYSQL_PASSWORD') ?: getenv('DB_PASS') ?: '');
-define('DB_PORT', getenv('MYSQL_PORT') ?: getenv('DB_PORT') ?: '3306');
-define('DB_CHARSET', 'utf8mb4');
+// Database configuration - Railway PostgreSQL plugin provides PGHOST, PGPORT, etc.
+// Also check for DATABASE_URL which Railway can provide
+$databaseUrl = getenv('DATABASE_URL');
+if ($databaseUrl) {
+    $dbParts = parse_url($databaseUrl);
+    define('DB_HOST', $dbParts['host'] ?? 'localhost');
+    define('DB_PORT', $dbParts['port'] ?? '5432');
+    define('DB_NAME', ltrim($dbParts['path'] ?? '/namememory', '/'));
+    define('DB_USER', $dbParts['user'] ?? 'postgres');
+    define('DB_PASS', $dbParts['pass'] ?? '');
+} else {
+    define('DB_HOST', getenv('PGHOST') ?: getenv('DB_HOST') ?: 'localhost');
+    define('DB_PORT', getenv('PGPORT') ?: getenv('DB_PORT') ?: '5432');
+    define('DB_NAME', getenv('PGDATABASE') ?: getenv('DB_NAME') ?: 'namememory');
+    define('DB_USER', getenv('PGUSER') ?: getenv('DB_USER') ?: 'postgres');
+    define('DB_PASS', getenv('PGPASSWORD') ?: getenv('DB_PASS') ?: '');
+}
 
 // JWT Secret Key - MUST be set in production environment
 define('JWT_SECRET', getenv('JWT_SECRET') ?: 'change-this-in-production');
@@ -33,9 +43,9 @@ $defaultApiUrl = $railwayDomain ? "https://{$railwayDomain}/api" : 'http://local
 define('APP_URL', getenv('APP_URL') ?: $defaultUrl);
 define('API_URL', getenv('API_URL') ?: $defaultApiUrl);
 
-// Upload settings
+// Upload settings - Railway Volume mounted at /uploads
 define('UPLOAD_MAX_SIZE', (int)(getenv('UPLOAD_MAX_SIZE') ?: 10 * 1024 * 1024)); // 10MB
-define('UPLOAD_DIR', getenv('UPLOAD_DIR') ?: __DIR__ . '/../../uploads/');
+define('UPLOAD_DIR', getenv('UPLOAD_DIR') ?: '/uploads/');
 define('PHOTO_MAX_WIDTH', (int)(getenv('PHOTO_MAX_WIDTH') ?: 800));
 define('PHOTO_QUALITY', (int)(getenv('PHOTO_QUALITY') ?: 75));
 define('THUMBNAIL_SIZE', (int)(getenv('THUMBNAIL_SIZE') ?: 150));

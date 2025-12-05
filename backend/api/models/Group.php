@@ -13,7 +13,7 @@ class Group {
      * Create new group
      */
     public function create($name, $ownerId) {
-        $sql = "INSERT INTO `groups` (name, owner_id) VALUES (?, ?)";
+        $sql = 'INSERT INTO "groups" (name, owner_id) VALUES (?, ?)';
         $this->db->execute($sql, [$name, $ownerId]);
         return $this->db->lastInsertId();
     }
@@ -22,12 +22,12 @@ class Group {
      * Get all groups owned by user
      */
     public function getOwnedByUser($userId) {
-        $sql = "SELECT g.*, COUNT(p.id) as person_count
-                FROM `groups` g
+        $sql = 'SELECT g.*, COUNT(p.id) as person_count
+                FROM "groups" g
                 LEFT JOIN people p ON g.id = p.group_id
                 WHERE g.owner_id = ?
                 GROUP BY g.id
-                ORDER BY g.updated_at DESC";
+                ORDER BY g.updated_at DESC';
         return $this->db->fetchAll($sql, [$userId]);
     }
 
@@ -35,14 +35,14 @@ class Group {
      * Get all groups shared with user
      */
     public function getSharedWithUser($userId) {
-        $sql = "SELECT g.*, gs.permission, u.name as owner_name, COUNT(p.id) as person_count
-                FROM `groups` g
+        $sql = 'SELECT g.*, gs.permission, u.name as owner_name, COUNT(p.id) as person_count
+                FROM "groups" g
                 INNER JOIN group_shares gs ON g.id = gs.group_id
                 INNER JOIN users u ON g.owner_id = u.id
                 LEFT JOIN people p ON g.id = p.group_id
                 WHERE gs.shared_with_user_id = ?
                 GROUP BY g.id, gs.permission, u.name
-                ORDER BY gs.shared_at DESC";
+                ORDER BY gs.shared_at DESC';
         return $this->db->fetchAll($sql, [$userId]);
     }
 
@@ -50,7 +50,7 @@ class Group {
      * Get group by ID
      */
     public function findById($id) {
-        $sql = "SELECT * FROM `groups` WHERE id = ?";
+        $sql = 'SELECT * FROM "groups" WHERE id = ?';
         return $this->db->fetchOne($sql, [$id]);
     }
 
@@ -58,7 +58,7 @@ class Group {
      * Update group
      */
     public function update($id, $name) {
-        $sql = "UPDATE `groups` SET name = ?, updated_at = NOW() WHERE id = ?";
+        $sql = 'UPDATE "groups" SET name = ?, updated_at = NOW() WHERE id = ?';
         return $this->db->execute($sql, [$name, $id]);
     }
 
@@ -66,7 +66,7 @@ class Group {
      * Delete group
      */
     public function delete($id) {
-        $sql = "DELETE FROM `groups` WHERE id = ?";
+        $sql = 'DELETE FROM "groups" WHERE id = ?';
         return $this->db->execute($sql, [$id]);
     }
 
@@ -74,7 +74,7 @@ class Group {
      * Check if user owns group
      */
     public function isOwner($groupId, $userId) {
-        $sql = "SELECT id FROM `groups` WHERE id = ? AND owner_id = ?";
+        $sql = 'SELECT id FROM "groups" WHERE id = ? AND owner_id = ?';
         $result = $this->db->fetchOne($sql, [$groupId, $userId]);
         return $result !== false;
     }
@@ -116,8 +116,8 @@ class Group {
     public function share($groupId, $sharedWithUserId, $sharedByUserId, $permission = 'view') {
         $sql = "INSERT INTO group_shares (group_id, shared_with_user_id, shared_by_user_id, permission)
                 VALUES (?, ?, ?, ?)
-                ON DUPLICATE KEY UPDATE permission = ?";
-        return $this->db->execute($sql, [$groupId, $sharedWithUserId, $sharedByUserId, $permission, $permission]);
+                ON CONFLICT (group_id, shared_with_user_id) DO UPDATE SET permission = EXCLUDED.permission";
+        return $this->db->execute($sql, [$groupId, $sharedWithUserId, $sharedByUserId, $permission]);
     }
 
     /**
