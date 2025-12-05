@@ -1,0 +1,24 @@
+# Dependencies and cache
+vendor/
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+
+# Documentation
+*.md
+
+# Tests
+tests/
+phpunit.xml
+
+# Example config (real config is generated from env vars)
+api/config/database.example.php
+
+# Logs
+*.log
+logs/

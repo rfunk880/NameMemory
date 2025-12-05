@@ -1,5 +1,5 @@
 # Backend
-backend/api/config/database.php
+# Note: database.php is now committed as it reads from env vars (no secrets)
 backend/uploads/photos/*
 backend/uploads/thumbnails/*
 !backend/uploads/photos/.gitkeep

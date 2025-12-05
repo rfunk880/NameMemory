@@ -70,6 +70,12 @@ $path = rtrim($path, '/');
 
 // Route handling
 try {
+    // Health check endpoint (no auth required)
+    if ($path === '/health' && $method === 'GET') {
+        echo json_encode(['status' => 'ok', 'timestamp' => date('c')]);
+        exit;
+    }
+
     // Authentication routes
     if ($path === '/auth/register' && $method === 'POST') {
         $authController->register();
