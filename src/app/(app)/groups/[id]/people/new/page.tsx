@@ -10,6 +10,7 @@ export default function AddPersonPage() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [nickname, setNickname] = useState('');
+  const [company, setCompany] = useState('');
   const [notes, setNotes] = useState('');
   const [photo, setPhoto] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -32,6 +33,7 @@ export default function AddPersonPage() {
     fd.append('firstName', firstName.trim());
     if (lastName.trim()) fd.append('lastName', lastName.trim());
     if (nickname.trim()) fd.append('nickname', nickname.trim());
+    if (company.trim()) fd.append('company', company.trim());
     if (notes.trim()) fd.append('notes', notes.trim());
     if (photo) fd.append('photo', photo);
 
@@ -137,6 +139,17 @@ export default function AddPersonPage() {
                 autoComplete="off"
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
+                placeholder="Optional"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Company</label>
+              <input
+                className="input"
+                type="text"
+                autoComplete="off"
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
                 placeholder="Optional"
               />
             </div>
