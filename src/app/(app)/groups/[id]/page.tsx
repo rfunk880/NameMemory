@@ -50,17 +50,30 @@ export default function GroupDetailPage() {
   const [loading, setLoading] = useState(true);
   const [editingName, setEditingName] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
-      fetch(`/api/groups/${id}`).then((r) => r.json()),
-      fetch(`/api/groups/${id}/people`).then((r) => r.json()),
-    ]).then(([groupData, peopleData]) => {
-      setGroup(groupData);
-      setNewGroupName(groupData.name ?? '');
-      setPeople(Array.isArray(peopleData) ? peopleData : []);
-      setLoading(false);
-    });
+      fetch(`/api/groups/${id}`).then((r) => {
+        if (!r.ok) throw new Error(`Group not found (${r.status})`);
+        return r.json();
+      }),
+      fetch(`/api/groups/${id}/people`).then((r) => {
+        if (!r.ok) throw new Error(`Could not load people (${r.status})`);
+        return r.json();
+      }),
+    ])
+      .then(([groupData, peopleData]) => {
+        setGroup(groupData);
+        setNewGroupName(groupData.name ?? '');
+        setPeople(Array.isArray(peopleData) ? peopleData : []);
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : 'Failed to load group');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [id]);
 
   const renameGroup = async (e: React.FormEvent) => {
@@ -90,10 +103,23 @@ export default function GroupDetailPage() {
     setGroup((g) => (g ? { ...g, _count: { people: g._count.people - 1 } } : g));
   };
 
-  if (loading || !group) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-gray-400 text-lg">Loading…</div>
+      </div>
+    );
+  }
+
+  if (error || !group) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 text-lg mb-4">{error ?? 'Group not found'}</p>
+          <button onClick={() => router.push('/dashboard')} className="btn-secondary">
+            Back to Dashboard
+          </button>
+        </div>
       </div>
     );
   }
