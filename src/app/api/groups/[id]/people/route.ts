@@ -39,6 +39,7 @@ export async function POST(request: NextRequest, { params }: Params) {
   const firstName = (formData.get('firstName') as string)?.trim();
   const lastName = (formData.get('lastName') as string)?.trim() || null;
   const nickname = (formData.get('nickname') as string)?.trim() || null;
+  const company = (formData.get('company') as string)?.trim() || null;
   const notes = (formData.get('notes') as string)?.trim() || null;
   const photo = formData.get('photo') as File | null;
 
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest, { params }: Params) {
   }
 
   const person = await prisma.person.create({
-    data: { groupId: Number(id), firstName, lastName, nickname, notes, photoPath, thumbPath },
+    data: { groupId: Number(id), firstName, lastName, nickname, company, notes, photoPath, thumbPath },
   });
 
   await prisma.group.update({ where: { id: Number(id) }, data: { updatedAt: new Date() } });
