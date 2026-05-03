@@ -20,6 +20,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     firstName: string;
     lastName: string | null;
     nickname: string | null;
+    company: string | null;
     notes: string | null;
     photo: File | null;
   }> = [];
@@ -29,11 +30,12 @@ export async function POST(request: NextRequest, { params }: Params) {
     const firstName = (formData.get(`firstName_${i}`) as string)?.trim();
     const lastName = (formData.get(`lastName_${i}`) as string)?.trim() || null;
     const nickname = (formData.get(`nickname_${i}`) as string)?.trim() || null;
+    const company = (formData.get(`company_${i}`) as string)?.trim() || null;
     const notes = (formData.get(`notes_${i}`) as string)?.trim() || null;
     const photo = formData.get(`photo_${i}`) as File | null;
 
     if (firstName) {
-      entries.push({ firstName, lastName, nickname, notes, photo });
+      entries.push({ firstName, lastName, nickname, company, notes, photo });
     }
     i++;
   }
@@ -59,6 +61,7 @@ export async function POST(request: NextRequest, { params }: Params) {
           firstName: entry.firstName,
           lastName: entry.lastName,
           nickname: entry.nickname,
+          company: entry.company,
           notes: entry.notes,
           photoPath,
           thumbPath,

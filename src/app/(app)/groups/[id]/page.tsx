@@ -9,6 +9,7 @@ interface Person {
   firstName: string;
   lastName: string | null;
   nickname: string | null;
+  company: string | null;
   notes: string | null;
   thumbPath: string | null;
 }
@@ -202,6 +203,7 @@ export default function GroupDetailPage() {
                   <PhotoAvatar thumbPath={person.thumbPath} name={person.firstName} />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{name}</p>
+                    {person.company && <p className="text-sm text-indigo-500 truncate">{person.company}</p>}
                     {person.notes && <p className="text-sm text-gray-400 truncate">{person.notes}</p>}
                   </div>
                   <div className="flex gap-2">

@@ -9,6 +9,7 @@ interface PhotoEntry {
   preview: string;
   firstName: string;
   lastName: string;
+  company: string;
 }
 
 export default function BulkAddPage() {
@@ -29,6 +30,7 @@ export default function BulkAddPage() {
       preview: URL.createObjectURL(file),
       firstName: '',
       lastName: '',
+      company: '',
     }));
     setEntries((prev) => [...prev, ...newEntries]);
   }, []);
@@ -41,7 +43,7 @@ export default function BulkAddPage() {
     });
   };
 
-  const updateEntry = (entryId: string, field: 'firstName' | 'lastName', value: string) => {
+  const updateEntry = (entryId: string, field: 'firstName' | 'lastName' | 'company', value: string) => {
     setEntries((prev) => prev.map((e) => (e.id === entryId ? { ...e, [field]: value } : e)));
   };
 
@@ -57,6 +59,7 @@ export default function BulkAddPage() {
     validEntries.forEach((entry, i) => {
       fd.append(`firstName_${i}`, entry.firstName.trim());
       if (entry.lastName.trim()) fd.append(`lastName_${i}`, entry.lastName.trim());
+      if (entry.company.trim()) fd.append(`company_${i}`, entry.company.trim());
       fd.append(`photo_${i}`, entry.file);
     });
 
@@ -173,6 +176,14 @@ export default function BulkAddPage() {
                       placeholder="Last name"
                       value={entry.lastName}
                       onChange={(e) => updateEntry(entry.id, 'lastName', e.target.value)}
+                      autoComplete="off"
+                    />
+                    <input
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      type="text"
+                      placeholder="Company"
+                      value={entry.company}
+                      onChange={(e) => updateEntry(entry.id, 'company', e.target.value)}
                       autoComplete="off"
                     />
                   </div>
