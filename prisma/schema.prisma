@@ -33,7 +33,6 @@ model Person {
   firstName String
   lastName  String?
   nickname  String?
-  company   String?
   notes     String?
   photoPath String?
   thumbPath String?
