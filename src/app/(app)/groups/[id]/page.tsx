@@ -141,30 +141,42 @@ export default function GroupDetailPage() {
       <main className="max-w-lg mx-auto px-4 py-5 pb-24">
         {/* Activity Buttons */}
         {count > 0 && (
-          <div className="grid grid-cols-3 gap-3 mb-6">
+          <>
             <Link
-              href={`/groups/${id}/learn`}
-              className="card text-center py-4 hover:shadow-md transition active:scale-95"
+              href={`/groups/${id}/lookup`}
+              className="flex items-center justify-between bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition rounded-2xl px-5 py-4 mb-3 shadow-sm"
             >
-              <div className="text-2xl mb-1">🃏</div>
-              <div className="text-xs font-semibold text-indigo-600">Flashcards</div>
+              <div>
+                <p className="text-white font-bold text-base leading-tight">Quick Find</p>
+                <p className="text-indigo-200 text-xs mt-0.5">Tap a face → see name &amp; company</p>
+              </div>
+              <div className="text-3xl">🔍</div>
             </Link>
-            <Link
-              href={canQuiz ? `/groups/${id}/quiz` : '#'}
-              onClick={!canQuiz ? (e) => { e.preventDefault(); alert('Need at least 2 people for quiz'); } : undefined}
-              className={`card text-center py-4 transition active:scale-95 ${canQuiz ? 'hover:shadow-md' : 'opacity-50'}`}
-            >
-              <div className="text-2xl mb-1">🎯</div>
-              <div className="text-xs font-semibold text-purple-600">Quiz</div>
-            </Link>
-            <Link
-              href={`/groups/${id}/test`}
-              className="card text-center py-4 hover:shadow-md transition active:scale-95"
-            >
-              <div className="text-2xl mb-1">✏️</div>
-              <div className="text-xs font-semibold text-green-600">Test</div>
-            </Link>
-          </div>
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              <Link
+                href={`/groups/${id}/learn`}
+                className="card text-center py-4 hover:shadow-md transition active:scale-95"
+              >
+                <div className="text-2xl mb-1">🃏</div>
+                <div className="text-xs font-semibold text-indigo-600">Flashcards</div>
+              </Link>
+              <Link
+                href={canQuiz ? `/groups/${id}/quiz` : '#'}
+                onClick={!canQuiz ? (e) => { e.preventDefault(); alert('Need at least 2 people for quiz'); } : undefined}
+                className={`card text-center py-4 transition active:scale-95 ${canQuiz ? 'hover:shadow-md' : 'opacity-50'}`}
+              >
+                <div className="text-2xl mb-1">🎯</div>
+                <div className="text-xs font-semibold text-purple-600">Quiz</div>
+              </Link>
+              <Link
+                href={`/groups/${id}/test`}
+                className="card text-center py-4 hover:shadow-md transition active:scale-95"
+              >
+                <div className="text-2xl mb-1">✏️</div>
+                <div className="text-xs font-semibold text-green-600">Test</div>
+              </Link>
+            </div>
+          </>
         )}
 
         {/* Add Person Button */}
