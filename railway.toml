@@ -4,10 +4,14 @@ dockerfilePath = "Dockerfile"
 
 [deploy]
 healthcheckPath = "/api/health"
-healthcheckTimeout = 30
+healthcheckTimeout = 60
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
 
-# Note: Configure Volume in Railway Dashboard
-# Mount path: /uploads
-# This persists uploaded photos across deployments
+# Environment variables to set in Railway dashboard:
+#   DATABASE_URL  — provided automatically by Railway PostgreSQL plugin
+#   JWT_SECRET    — generate with: openssl rand -hex 32
+#   UPLOAD_DIR    — /uploads (matches the Railway Volume mount path)
+#
+# Railway Volume:
+#   Mount path: /uploads

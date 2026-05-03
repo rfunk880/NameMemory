@@ -1,23 +1,19 @@
-# Backend
-# Note: database.php is now committed as it reads from env vars (no secrets)
-backend/uploads/photos/*
-backend/uploads/thumbnails/*
-!backend/uploads/photos/.gitkeep
-!backend/uploads/thumbnails/.gitkeep
-vendor/
-composer.lock
+# Dependencies
+node_modules/
 
-# Frontend
-frontend/node_modules/
-frontend/dist/
-frontend/.env
-frontend/.env.local
+# Next.js
+.next/
+out/
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Uploads (stored in Railway Volume, not in repo)
+/uploads/
 
 # OS
 .DS_Store
@@ -25,5 +21,11 @@ Thumbs.db
 
 # Logs
 *.log
-_NOTES/notes.txt
-/_NOTES
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+
+# Prisma
+prisma/*.db

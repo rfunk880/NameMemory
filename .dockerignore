@@ -1,40 +1,6 @@
-# Git
+node_modules
+.next
 .git
-.gitignore
-
-# IDE
-.idea/
-.vscode/
-
-# Documentation
 *.md
-!README.md
-
-# Frontend build artifacts (we build in Docker)
-frontend/node_modules/
-frontend/dist/
-
-# Environment files
-frontend/.env
-frontend/.env.local
-frontend/.env.production
-
-# Backend sensitive files
-backend/api/config/database.example.php
-
-# Logs
-*.log
-logs/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Test files
-**/tests/
-**/*.test.*
-**/*.spec.*
-coverage/
-
-# Notes
-_NOTES/
+.env*
+!.env.example

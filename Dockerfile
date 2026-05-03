@@ -1,74 +1,52 @@
-# Combined Dockerfile for Railway
-# Single container serving React frontend + PHP API
-
-# Stage 1: Build React frontend
-FROM node:20-alpine AS frontend-builder
-
-WORKDIR /app/frontend
-
-COPY frontend/package*.json ./
+# ---- deps ----
+FROM node:20-alpine AS deps
+RUN apk add --no-cache libc6-compat python3 make g++
+WORKDIR /app
+COPY package.json package-lock.json ./
 RUN npm ci
 
-COPY frontend/ ./
-
-# Build with API URL pointing to same domain
-ARG VITE_API_URL=/api
-ENV VITE_API_URL=${VITE_API_URL}
-
+# ---- builder ----
+FROM node:20-alpine AS builder
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN npx prisma generate
+ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
-# Stage 2: Production image with nginx + PHP-FPM
-FROM php:8.2-fpm-alpine
+# ---- runner ----
+FROM node:20-alpine AS runner
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
 
-# Install nginx and required PHP extensions (PostgreSQL)
-RUN apk add --no-cache \
-    nginx \
-    supervisor \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
-    libzip-dev \
-    postgresql-dev \
-    curl \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd pdo pdo_pgsql zip
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# Configure PHP
-RUN echo "upload_max_filesize = 20M" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "post_max_size = 25M" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "memory_limit = 128M" >> /usr/local/etc/php/conf.d/uploads.ini
+RUN addgroup --system --gid 1001 nodejs \
+ && adduser --system --uid 1001 nextjs
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/http.d/default.conf
+# Copy standalone Next.js output
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy supervisor configuration
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# Copy Prisma artifacts needed at runtime
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
 
-# Copy PHP backend
-COPY backend/api/ /var/www/html/api/
+# Upload dir (Railway Volume will be mounted here; pre-create for local testing)
+RUN mkdir -p /uploads/photos /uploads/thumbs && chown -R nextjs:nodejs /uploads
 
-# Create upload directories (Railway Volume will be mounted at /uploads)
-RUN mkdir -p /uploads/photos /uploads/thumbnails \
-    && chown -R www-data:www-data /uploads \
-    && chmod -R 775 /uploads
+COPY --chown=nextjs:nodejs start.sh ./
+RUN chmod +x start.sh
 
-# Copy built frontend from stage 1
-COPY --from=frontend-builder /app/frontend/dist /var/www/html/public
+USER nextjs
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
+EXPOSE 3000
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
 
-# Create nginx cache and pid directories
-RUN mkdir -p /var/cache/nginx /var/run/nginx /var/log/nginx /var/log/supervisor \
-    && chown -R www-data:www-data /var/cache/nginx /var/run/nginx /var/log/nginx
-
-# Expose port (Railway uses PORT env var)
-EXPOSE 8080
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/api/health || exit 1
-
-# Start supervisor (manages nginx + php-fpm)
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["./start.sh"]
