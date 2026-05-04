@@ -9,6 +9,7 @@ interface Person {
   firstName: string;
   lastName: string | null;
   nickname: string | null;
+  company: string | null;
   notes: string | null;
   thumbPath: string | null;
   active: boolean;
@@ -50,17 +51,30 @@ export default function GroupDetailPage() {
   const [editingName, setEditingName] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [filter, setFilter] = useState<Filter>('active');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
-      fetch(`/api/groups/${id}`).then((r) => r.json()),
-      fetch(`/api/groups/${id}/people`).then((r) => r.json()),
-    ]).then(([groupData, peopleData]) => {
-      setGroup(groupData);
-      setNewGroupName(groupData.name ?? '');
-      setPeople(Array.isArray(peopleData) ? peopleData : []);
-      setLoading(false);
-    });
+      fetch(`/api/groups/${id}`).then((r) => {
+        if (!r.ok) throw new Error(`Group not found (${r.status})`);
+        return r.json();
+      }),
+      fetch(`/api/groups/${id}/people`).then((r) => {
+        if (!r.ok) throw new Error(`Could not load people (${r.status})`);
+        return r.json();
+      }),
+    ])
+      .then(([groupData, peopleData]) => {
+        setGroup(groupData);
+        setNewGroupName(groupData.name ?? '');
+        setPeople(Array.isArray(peopleData) ? peopleData : []);
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : 'Failed to load group');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [id]);
 
   const renameGroup = async (e: React.FormEvent) => {
@@ -112,10 +126,23 @@ export default function GroupDetailPage() {
     return people;
   }, [people, filter]);
 
-  if (loading || !group) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-gray-400 text-lg">Loading…</div>
+      </div>
+    );
+  }
+
+  if (error || !group) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 text-lg mb-4">{error ?? 'Group not found'}</p>
+          <button onClick={() => router.push('/dashboard')} className="btn-secondary">
+            Back to Dashboard
+          </button>
+        </div>
       </div>
     );
   }
@@ -164,38 +191,55 @@ export default function GroupDetailPage() {
       <main className="max-w-lg mx-auto px-4 py-5 pb-24">
         {/* Activity Buttons */}
         {activeCount > 0 && (
-          <div className="grid grid-cols-3 gap-3 mb-6">
+          <>
             <Link
-              href={`/groups/${id}/learn`}
-              className="card text-center py-4 hover:shadow-md transition active:scale-95"
+              href={`/groups/${id}/lookup`}
+              className="flex items-center justify-between bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition rounded-2xl px-5 py-4 mb-3 shadow-sm"
             >
-              <div className="text-2xl mb-1">🃏</div>
-              <div className="text-xs font-semibold text-indigo-600">Flashcards</div>
+              <div>
+                <p className="text-white font-bold text-base leading-tight">Quick Find</p>
+                <p className="text-indigo-200 text-xs mt-0.5">Tap a face → see name &amp; company</p>
+              </div>
+              <div className="text-3xl">🔍</div>
             </Link>
-            <Link
-              href={canQuiz ? `/groups/${id}/quiz` : '#'}
-              onClick={!canQuiz ? (e) => { e.preventDefault(); alert('Need at least 2 active people for quiz'); } : undefined}
-              className={`card text-center py-4 transition active:scale-95 ${canQuiz ? 'hover:shadow-md' : 'opacity-50'}`}
-            >
-              <div className="text-2xl mb-1">🎯</div>
-              <div className="text-xs font-semibold text-purple-600">Quiz</div>
-            </Link>
-            <Link
-              href={`/groups/${id}/test`}
-              className="card text-center py-4 hover:shadow-md transition active:scale-95"
-            >
-              <div className="text-2xl mb-1">✏️</div>
-              <div className="text-xs font-semibold text-green-600">Test</div>
-            </Link>
-          </div>
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              <Link
+                href={`/groups/${id}/learn`}
+                className="card text-center py-4 hover:shadow-md transition active:scale-95"
+              >
+                <div className="text-2xl mb-1">🃏</div>
+                <div className="text-xs font-semibold text-indigo-600">Flashcards</div>
+              </Link>
+              <Link
+                href={canQuiz ? `/groups/${id}/quiz` : '#'}
+                onClick={!canQuiz ? (e) => { e.preventDefault(); alert('Need at least 2 active people for quiz'); } : undefined}
+                className={`card text-center py-4 transition active:scale-95 ${canQuiz ? 'hover:shadow-md' : 'opacity-50'}`}
+              >
+                <div className="text-2xl mb-1">🎯</div>
+                <div className="text-xs font-semibold text-purple-600">Quiz</div>
+              </Link>
+              <Link
+                href={`/groups/${id}/test`}
+                className="card text-center py-4 hover:shadow-md transition active:scale-95"
+              >
+                <div className="text-2xl mb-1">✏️</div>
+                <div className="text-xs font-semibold text-green-600">Test</div>
+              </Link>
+            </div>
+          </>
         )}
 
         {/* Add Person Button */}
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-semibold text-gray-700">People</h2>
-          <Link href={`/groups/${id}/people/new`} className="btn-primary text-sm px-4 py-2">
-            + Add Person
-          </Link>
+          <div className="flex gap-2">
+            <Link href={`/groups/${id}/people/bulk`} className="btn-secondary text-sm px-3 py-2">
+              Bulk Upload
+            </Link>
+            <Link href={`/groups/${id}/people/new`} className="btn-primary text-sm px-4 py-2">
+              + Add Person
+            </Link>
+          </div>
         </div>
 
         {/* Filter tabs */}
@@ -228,9 +272,14 @@ export default function GroupDetailPage() {
           <div className="text-center py-12">
             <div className="text-4xl mb-3">🤷</div>
             <p className="text-gray-400 mb-4">No people yet</p>
-            <Link href={`/groups/${id}/people/new`} className="btn-primary">
-              Add first person
-            </Link>
+            <div className="flex flex-col gap-3 items-center">
+              <Link href={`/groups/${id}/people/new`} className="btn-primary">
+                Add first person
+              </Link>
+              <Link href={`/groups/${id}/people/bulk`} className="btn-secondary">
+                Bulk upload photos
+              </Link>
+            </div>
           </div>
         ) : visiblePeople.length === 0 ? (
           <div className="text-center py-10 text-gray-400 text-sm">
@@ -260,6 +309,11 @@ export default function GroupDetailPage() {
                         </span>
                       )}
                     </p>
+                    {person.company && (
+                      <p className={`text-sm truncate ${dim ? 'text-gray-300' : 'text-indigo-500'}`}>
+                        {person.company}
+                      </p>
+                    )}
                     {person.notes && (
                       <p className={`text-sm truncate ${dim ? 'text-gray-300' : 'text-gray-400'}`}>
                         {person.notes}
