@@ -10,6 +10,7 @@ interface Person {
   nickname: string | null;
   notes: string | null;
   photoPath: string | null;
+  active: boolean;
 }
 
 function displayName(p: Person) {
@@ -58,12 +59,13 @@ export default function TestPage() {
     fetch(`/api/groups/${id}/people`)
       .then((r) => r.json())
       .then((data) => {
-        if (!Array.isArray(data) || data.length === 0) {
+        const activePeople = Array.isArray(data) ? data.filter((p: Person) => p.active) : [];
+        if (activePeople.length === 0) {
           router.push(`/groups/${id}`);
           return;
         }
-        setPeople(data);
-        setDeck(shuffle(data));
+        setPeople(activePeople);
+        setDeck(shuffle(activePeople));
         setLoading(false);
       });
   }, [id, router]);
