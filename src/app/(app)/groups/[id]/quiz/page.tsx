@@ -9,6 +9,7 @@ interface Person {
   lastName: string | null;
   nickname: string | null;
   photoPath: string | null;
+  active: boolean;
 }
 
 interface Question {
@@ -56,13 +57,14 @@ export default function QuizPage() {
     fetch(`/api/groups/${id}/people`)
       .then((r) => r.json())
       .then((data) => {
-        if (!Array.isArray(data) || data.length < 2) {
-          alert('Need at least 2 people for the quiz');
+        const activePeople = Array.isArray(data) ? data.filter((p: Person) => p.active) : [];
+        if (activePeople.length < 2) {
+          alert('Need at least 2 active people for the quiz');
           router.push(`/groups/${id}`);
           return;
         }
-        setPeople(data);
-        setQuestions(buildQuestions(data));
+        setPeople(activePeople);
+        setQuestions(buildQuestions(activePeople));
         setLoading(false);
       });
   }, [id, router]);

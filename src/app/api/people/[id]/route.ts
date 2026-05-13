@@ -73,6 +73,30 @@ export async function PUT(request: NextRequest, { params }: Params) {
   return NextResponse.json(updated);
 }
 
+export async function PATCH(request: NextRequest, { params }: Params) {
+  const auth = await getAuthUser();
+  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { id } = await params;
+  const person = await getPersonForUser(Number(id), auth.userId);
+  if (!person) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+  const body = await request.json().catch(() => ({}));
+  const data: { active?: boolean } = {};
+  if (typeof body.active === 'boolean') data.active = body.active;
+
+  if (Object.keys(data).length === 0) {
+    return NextResponse.json({ error: 'No supported fields to update' }, { status: 400 });
+  }
+
+  const updated = await prisma.person.update({
+    where: { id: Number(id) },
+    data,
+  });
+
+  return NextResponse.json(updated);
+}
+
 export async function DELETE(_req: NextRequest, { params }: Params) {
   const auth = await getAuthUser();
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
