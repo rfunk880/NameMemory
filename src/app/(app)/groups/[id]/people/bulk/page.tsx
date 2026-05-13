@@ -3,11 +3,29 @@
 import { useState, FormEvent } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
-function parseNames(raw: string): string[] {
+interface ParsedPerson {
+  firstName: string;
+  lastName: string;
+  nickname: string;
+}
+
+function parseLines(raw: string): ParsedPerson[] {
   return raw
-    .split(',')
-    .map((n) => n.trim())
-    .filter((n) => n.length > 0);
+    .split('\n')
+    .map((line) => {
+      const parts = line.split(',').map((p) => p.trim());
+      return {
+        firstName: parts[0] ?? '',
+        lastName: parts[1] ?? '',
+        nickname: parts[2] ?? '',
+      };
+    })
+    .filter((p) => p.firstName.length > 0);
+}
+
+function displayName(p: ParsedPerson) {
+  const parts = [p.firstName, p.lastName].filter(Boolean).join(' ');
+  return p.nickname ? `${parts} "${p.nickname}"` : parts;
 }
 
 export default function BulkAddPeoplePage() {
@@ -18,7 +36,7 @@ export default function BulkAddPeoplePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  const preview = parseNames(text);
+  const preview = parseLines(text);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -30,7 +48,7 @@ export default function BulkAddPeoplePage() {
       const res = await fetch(`/api/groups/${id}/people/bulk`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ names: preview }),
+        body: JSON.stringify({ people: preview }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to save');
@@ -63,18 +81,21 @@ export default function BulkAddPeoplePage() {
           <div className="card space-y-3">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Names <span className="text-red-500">*</span>
+                People <span className="text-red-500">*</span>
               </label>
               <p className="text-xs text-gray-400 mb-2">
-                Enter names separated by commas. Include a last name after a space (e.g. "John Smith, Jane, Bob Jones").
+                One person per line — <span className="font-mono">First name, Last name, Nickname</span>
               </p>
               <textarea
-                className="input min-h-[140px] resize-y"
+                className="input min-h-[180px] resize-y font-mono text-sm"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder="John Smith, Jane Doe, Bob, Alice Johnson…"
+                placeholder={"John, Smith, Johnny\nJane, Doe\nBob"}
                 autoFocus
               />
+              <p className="text-xs text-gray-400 mt-2">
+                Example: <span className="font-mono text-gray-500">John, Smith, Johnny</span>
+              </p>
             </div>
           </div>
 
@@ -84,12 +105,12 @@ export default function BulkAddPeoplePage() {
                 Preview — {preview.length} {preview.length === 1 ? 'person' : 'people'}
               </p>
               <ul className="space-y-1.5">
-                {preview.map((name, i) => (
+                {preview.map((person, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
                     <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-500 flex items-center justify-center text-xs font-bold shrink-0">
-                      {name[0].toUpperCase()}
+                      {person.firstName[0].toUpperCase()}
                     </span>
-                    {name}
+                    <span>{displayName(person)}</span>
                   </li>
                 ))}
               </ul>
