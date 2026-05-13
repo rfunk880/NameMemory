@@ -2,43 +2,18 @@
 
 echo "=== NameMemory startup ==="
 
-# Try migrate deploy first (preferred for environments with a clean migration
-# baseline). It can fail on this database because it was originally
-# bootstrapped via `db push` and lacks the init baseline in
-# `_prisma_migrations`. We don't fail the boot on this — we always follow up
-# with `db push` below to guarantee schema.prisma is in sync with the live DB.
-echo "Running prisma migrate deploy..."
+# Apply all schema additions idempotently via raw SQL.
+# We avoid `migrate deploy` (it fails on this DB which was bootstrapped via
+# `db push` and has no migration baseline) and `db push` (it refuses to run
+# when any prior migration is recorded as failed, which happens because the
+# init migration tries to CREATE tables that already exist).
+# Raw SQL with IF NOT EXISTS / CREATE INDEX IF NOT EXISTS is always safe to
+# re-run and doesn't depend on Prisma migration state.
+echo "Applying schema additions..."
 for i in 1 2 3 4 5; do
-  if node node_modules/prisma/build/index.js migrate deploy 2>&1; then
-    echo "migrate deploy OK"
-    break
-  fi
-  if [ $i -eq 5 ]; then
-    echo "migrate deploy failed after 5 attempts — will rely on db push"
-  else
-    echo "Attempt $i failed, retrying in 3s..."
-    sleep 3
-  fi
-done
-
-# Final safety net: guarantee Person.active exists regardless of what
-# migrate deploy / db push did. IF NOT EXISTS makes it idempotent.
-echo "Ensuring Person.active column exists..."
-node node_modules/prisma/build/index.js db execute --stdin <<'SQL' || echo "(active column ensure failed, continuing)"
+  if node node_modules/prisma/build/index.js db execute --stdin <<'SQL'
 ALTER TABLE "Person" ADD COLUMN IF NOT EXISTS "active" BOOLEAN NOT NULL DEFAULT true;
-SQL
-
-echo "Ensuring Person.company column exists..."
-node node_modules/prisma/build/index.js db execute --stdin <<'SQL' || echo "(company column ensure failed, continuing)"
 ALTER TABLE "Person" ADD COLUMN IF NOT EXISTS "company" TEXT;
-SQL
-
-# Safety net for the PasswordReset table used by the forgot-password flow.
-# If `db push` fails (which has happened historically on this DB), the
-# /api/auth/forgot-password route returns 500 because the table is missing.
-# IF NOT EXISTS keeps this idempotent.
-echo "Ensuring PasswordReset table exists..."
-node node_modules/prisma/build/index.js db execute --stdin <<'SQL' || echo "(PasswordReset ensure failed, continuing)"
 CREATE TABLE IF NOT EXISTS "PasswordReset" (
   "id" SERIAL PRIMARY KEY,
   "token" TEXT NOT NULL UNIQUE,
@@ -49,19 +24,12 @@ CREATE TABLE IF NOT EXISTS "PasswordReset" (
 );
 CREATE INDEX IF NOT EXISTS "PasswordReset_userId_idx" ON "PasswordReset"("userId");
 SQL
-
-# Always sync schema with `db push`. Idempotent: a no-op if everything matches.
-# Non-destructive: --accept-data-loss=false errors instead of dropping data,
-# so it can only add missing columns/tables to bring the DB in line with
-# schema.prisma.
-echo "Syncing schema with prisma db push..."
-for i in 1 2 3 4 5; do
-  if node node_modules/prisma/build/index.js db push --skip-generate --accept-data-loss=false 2>&1; then
-    echo "db push OK"
+  then
+    echo "Schema additions OK"
     break
   fi
   if [ $i -eq 5 ]; then
-    echo "Warning: db push failed after 5 attempts — continuing"
+    echo "WARNING: schema apply failed after 5 attempts — server may 500 on missing columns"
   else
     echo "Attempt $i failed, retrying in 3s..."
     sleep 3
