@@ -8,6 +8,7 @@ interface PersonInput {
   firstName: string;
   lastName: string;
   nickname: string;
+  company: string;
 }
 
 export async function POST(request: NextRequest, { params }: Params) {
@@ -38,6 +39,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       firstName: p.firstName.trim(),
       lastName: p.lastName?.trim() || null,
       nickname: p.nickname?.trim() || null,
+      company: p.company?.trim() || null,
     })),
   });
 

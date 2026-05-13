@@ -8,6 +8,7 @@ interface Person {
   firstName: string;
   lastName: string | null;
   nickname: string | null;
+  company: string | null;
   notes: string | null;
   photoPath: string | null;
   thumbPath: string | null;
@@ -21,6 +22,7 @@ export default function EditPersonPage() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [nickname, setNickname] = useState('');
+  const [company, setCompany] = useState('');
   const [notes, setNotes] = useState('');
   const [photo, setPhoto] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -37,6 +39,7 @@ export default function EditPersonPage() {
         setFirstName(data.firstName);
         setLastName(data.lastName ?? '');
         setNickname(data.nickname ?? '');
+        setCompany(data.company ?? '');
         setNotes(data.notes ?? '');
       });
   }, [personId]);
@@ -57,6 +60,7 @@ export default function EditPersonPage() {
     fd.append('firstName', firstName.trim());
     if (lastName.trim()) fd.append('lastName', lastName.trim());
     if (nickname.trim()) fd.append('nickname', nickname.trim());
+    if (company.trim()) fd.append('company', company.trim());
     if (notes.trim()) fd.append('notes', notes.trim());
     if (photo) fd.append('photo', photo);
     if (removePhoto) fd.append('removePhoto', 'true');
@@ -182,6 +186,15 @@ export default function EditPersonPage() {
                 type="text"
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Company</label>
+              <input
+                className="input"
+                type="text"
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
               />
             </div>
             <div>

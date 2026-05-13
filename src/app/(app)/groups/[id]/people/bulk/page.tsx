@@ -7,6 +7,7 @@ interface ParsedPerson {
   firstName: string;
   lastName: string;
   nickname: string;
+  company: string;
 }
 
 function parseLines(raw: string): ParsedPerson[] {
@@ -18,6 +19,7 @@ function parseLines(raw: string): ParsedPerson[] {
         firstName: parts[0] ?? '',
         lastName: parts[1] ?? '',
         nickname: parts[2] ?? '',
+        company: parts[3] ?? '',
       };
     })
     .filter((p) => p.firstName.length > 0);
@@ -25,7 +27,8 @@ function parseLines(raw: string): ParsedPerson[] {
 
 function displayName(p: ParsedPerson) {
   const parts = [p.firstName, p.lastName].filter(Boolean).join(' ');
-  return p.nickname ? `${parts} "${p.nickname}"` : parts;
+  const name = p.nickname ? `${parts} "${p.nickname}"` : parts;
+  return p.company ? `${name} — ${p.company}` : name;
 }
 
 export default function BulkAddPeoplePage() {
@@ -84,17 +87,17 @@ export default function BulkAddPeoplePage() {
                 People <span className="text-red-500">*</span>
               </label>
               <p className="text-xs text-gray-400 mb-2">
-                One person per line — <span className="font-mono">First name, Last name, Nickname</span>
+                One person per line — <span className="font-mono">First name, Last name, Nickname, Company</span>
               </p>
               <textarea
                 className="input min-h-[180px] resize-y font-mono text-sm"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder={"John, Smith, Johnny\nJane, Doe\nBob"}
+                placeholder={"John, Smith, Johnny, Acme Corp\nJane, Doe\nBob"}
                 autoFocus
               />
               <p className="text-xs text-gray-400 mt-2">
-                Example: <span className="font-mono text-gray-500">John, Smith, Johnny</span>
+                Example: <span className="font-mono text-gray-500">John, Smith, Johnny, Acme Corp</span>
               </p>
             </div>
           </div>
