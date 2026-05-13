@@ -14,13 +14,19 @@ export async function GET(_req: NextRequest, { params }: Params) {
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id } = await params;
-  const group = await prisma.group.findFirst({
-    where: { id: Number(id), ownerId: auth.userId },
-    include: { _count: { select: { people: true } } },
-  });
+  try {
+    const group = await prisma.group.findFirst({
+      where: { id: Number(id), ownerId: auth.userId },
+      include: { _count: { select: { people: true } } },
+    });
 
-  if (!group) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  return NextResponse.json(group);
+    if (!group) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    return NextResponse.json(group);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('[GET /api/groups/:id]', err);
+    return NextResponse.json({ error: 'Failed to load group', detail: message }, { status: 500 });
+  }
 }
 
 export async function PUT(request: NextRequest, { params }: Params) {

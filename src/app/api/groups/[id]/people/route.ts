@@ -21,8 +21,9 @@ export async function GET(_req: NextRequest, { params }: Params) {
     });
     return NextResponse.json(people);
   } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
     console.error('[GET /api/groups/:id/people]', err);
-    return NextResponse.json({ error: 'Failed to load people' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to load people', detail: message }, { status: 500 });
   }
 }
 
