@@ -21,20 +21,16 @@ for i in 1 2 3 4 5; do
   fi
 done
 
-# Drop orphaned columns from earlier schema iterations. db push refuses to do
-# this with --accept-data-loss=false, which causes it to exit non-zero and
-# skip *every* other change — including adding new columns. Drop them
-# explicitly so db push has nothing destructive left to do.
-echo "Dropping orphaned columns (if present)..."
-node node_modules/prisma/build/index.js db execute --stdin <<'SQL' || echo "(drop step failed, continuing)"
-ALTER TABLE "Person" DROP COLUMN IF EXISTS "company";
-SQL
-
 # Final safety net: guarantee Person.active exists regardless of what
 # migrate deploy / db push did. IF NOT EXISTS makes it idempotent.
 echo "Ensuring Person.active column exists..."
 node node_modules/prisma/build/index.js db execute --stdin <<'SQL' || echo "(active column ensure failed, continuing)"
 ALTER TABLE "Person" ADD COLUMN IF NOT EXISTS "active" BOOLEAN NOT NULL DEFAULT true;
+SQL
+
+echo "Ensuring Person.company column exists..."
+node node_modules/prisma/build/index.js db execute --stdin <<'SQL' || echo "(company column ensure failed, continuing)"
+ALTER TABLE "Person" ADD COLUMN IF NOT EXISTS "company" TEXT;
 SQL
 
 # Safety net for the PasswordReset table used by the forgot-password flow.
