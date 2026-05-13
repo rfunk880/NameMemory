@@ -35,6 +35,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
   const firstName = (formData.get('firstName') as string)?.trim();
   const lastName = (formData.get('lastName') as string)?.trim() || null;
   const nickname = (formData.get('nickname') as string)?.trim() || null;
+  const company = (formData.get('company') as string)?.trim() || null;
   const notes = (formData.get('notes') as string)?.trim() || null;
   const photo = formData.get('photo') as File | null;
   const removePhoto = formData.get('removePhoto') === 'true';
@@ -66,7 +67,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
 
   const updated = await prisma.person.update({
     where: { id: Number(id) },
-    data: { firstName, lastName, nickname, notes, photoPath, thumbPath },
+    data: { firstName, lastName, nickname, company, notes, photoPath, thumbPath },
   });
 
   return NextResponse.json(updated);
