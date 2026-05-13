@@ -37,6 +37,23 @@ node node_modules/prisma/build/index.js db execute --stdin <<'SQL' || echo "(act
 ALTER TABLE "Person" ADD COLUMN IF NOT EXISTS "active" BOOLEAN NOT NULL DEFAULT true;
 SQL
 
+# Safety net for the PasswordReset table used by the forgot-password flow.
+# If `db push` fails (which has happened historically on this DB), the
+# /api/auth/forgot-password route returns 500 because the table is missing.
+# IF NOT EXISTS keeps this idempotent.
+echo "Ensuring PasswordReset table exists..."
+node node_modules/prisma/build/index.js db execute --stdin <<'SQL' || echo "(PasswordReset ensure failed, continuing)"
+CREATE TABLE IF NOT EXISTS "PasswordReset" (
+  "id" SERIAL PRIMARY KEY,
+  "token" TEXT NOT NULL UNIQUE,
+  "userId" INTEGER NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
+  "expiresAt" TIMESTAMP(3) NOT NULL,
+  "usedAt" TIMESTAMP(3),
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS "PasswordReset_userId_idx" ON "PasswordReset"("userId");
+SQL
+
 # Always sync schema with `db push`. Idempotent: a no-op if everything matches.
 # Non-destructive: --accept-data-loss=false errors instead of dropping data,
 # so it can only add missing columns/tables to bring the DB in line with

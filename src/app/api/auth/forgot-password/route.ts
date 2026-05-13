@@ -29,7 +29,8 @@ export async function POST(request: NextRequest) {
     const resetUrl = `${origin}/reset-password?token=${token}`;
 
     return NextResponse.json({ ok: true, resetUrl, expiresInMinutes: TOKEN_TTL_MINUTES });
-  } catch {
+  } catch (err) {
+    console.error('forgot-password failed:', err);
     return NextResponse.json({ error: 'Could not generate reset link' }, { status: 500 });
   }
 }
