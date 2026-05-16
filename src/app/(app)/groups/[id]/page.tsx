@@ -48,10 +48,10 @@ export default function GroupDetailPage() {
   const [group, setGroup] = useState<Group | null>(null);
   const [people, setPeople] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [editingName, setEditingName] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [filter, setFilter] = useState<Filter>('active');
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
