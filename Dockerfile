@@ -40,6 +40,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_module
 # Upload dir (Railway Volume will be mounted here; pre-create for local testing)
 RUN mkdir -p /uploads/photos /uploads/thumbs && chown -R nextjs:nodejs /uploads
 
+COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 COPY --chown=nextjs:nodejs start.sh ./
 RUN chmod +x start.sh
 
