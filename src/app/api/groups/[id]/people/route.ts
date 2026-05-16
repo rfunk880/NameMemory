@@ -11,14 +11,15 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
   const { id } = await params;
 
-  const group = await prisma.group.findFirst({ where: { id: Number(id), ownerId: auth.userId } });
-  if (!group) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-
   try {
+    const group = await prisma.group.findFirst({ where: { id: Number(id), ownerId: auth.userId } });
+    if (!group) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
     const people = await prisma.person.findMany({
       where: { groupId: Number(id) },
       orderBy: { firstName: 'asc' },
     });
+
     return NextResponse.json(people);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
