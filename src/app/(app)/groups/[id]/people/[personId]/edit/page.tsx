@@ -30,7 +30,15 @@ export default function EditPersonPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [photoLoadError, setPhotoLoadError] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) handlePhoto(file);
+  };
 
   useEffect(() => {
     fetch(`/api/people/${personId}`)
@@ -108,12 +116,17 @@ export default function EditPersonPage() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Photo */}
-          <div className="card text-center">
+          <div
+            className={`card text-center transition ${dragOver ? 'ring-2 ring-indigo-400 bg-indigo-50' : ''}`}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragEnter={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={handleDrop}
+          >
             <input
               ref={fileRef}
               type="file"
               accept="image/*"
-              capture="environment"
               className="hidden"
               onChange={(e) => e.target.files?.[0] && handlePhoto(e.target.files[0])}
             />
@@ -145,15 +158,24 @@ export default function EditPersonPage() {
                     Remove
                   </button>
                 </div>
+                {dragOver && (
+                  <p className="text-xs text-indigo-500 mt-2 font-medium">Drop to replace photo</p>
+                )}
               </div>
             ) : (
               <button
                 type="button"
                 onClick={() => fileRef.current?.click()}
-                className="w-full py-8 border-2 border-dashed border-gray-200 rounded-2xl text-gray-400 hover:border-indigo-300 transition"
+                className={`w-full py-8 border-2 border-dashed rounded-2xl transition ${
+                  dragOver
+                    ? 'border-indigo-400 text-indigo-400'
+                    : 'border-gray-200 text-gray-400 hover:border-indigo-300'
+                }`}
               >
                 <div className="text-4xl mb-2">📷</div>
-                <div className="text-sm font-medium">Tap to add photo</div>
+                <div className="text-sm font-medium">
+                  {dragOver ? 'Drop to add photo' : 'Tap or drop photo here'}
+                </div>
               </button>
             )}
           </div>

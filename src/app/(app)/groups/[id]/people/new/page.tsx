@@ -16,11 +16,19 @@ export default function AddPersonPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [dragOver, setDragOver] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handlePhoto = (file: File) => {
     setPhoto(file);
     setPreview(URL.createObjectURL(file));
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) handlePhoto(file);
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -68,12 +76,17 @@ export default function AddPersonPage() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Photo */}
-          <div className="card text-center">
+          <div
+            className={`card text-center transition ${dragOver ? 'ring-2 ring-indigo-400 bg-indigo-50' : ''}`}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragEnter={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={handleDrop}
+          >
             <input
               ref={fileRef}
               type="file"
               accept="image/*"
-              capture="environment"
               className="hidden"
               onChange={(e) => e.target.files?.[0] && handlePhoto(e.target.files[0])}
             />
@@ -96,10 +109,16 @@ export default function AddPersonPage() {
               <button
                 type="button"
                 onClick={() => fileRef.current?.click()}
-                className="w-full py-8 border-2 border-dashed border-gray-200 rounded-2xl text-gray-400 hover:border-indigo-300 hover:text-indigo-400 transition"
+                className={`w-full py-8 border-2 border-dashed rounded-2xl transition ${
+                  dragOver
+                    ? 'border-indigo-400 text-indigo-400'
+                    : 'border-gray-200 text-gray-400 hover:border-indigo-300 hover:text-indigo-400'
+                }`}
               >
                 <div className="text-4xl mb-2">📷</div>
-                <div className="text-sm font-medium">Tap to add photo</div>
+                <div className="text-sm font-medium">
+                  {dragOver ? 'Drop to add photo' : 'Tap or drop photo here'}
+                </div>
               </button>
             )}
           </div>
