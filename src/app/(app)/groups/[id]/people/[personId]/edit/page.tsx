@@ -29,6 +29,7 @@ export default function EditPersonPage() {
   const [removePhoto, setRemovePhoto] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [photoLoadError, setPhotoLoadError] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -85,7 +86,6 @@ export default function EditPersonPage() {
   }
 
   const currentPhotoUrl = person.photoPath ? `/api/uploads/${person.photoPath}` : null;
-  const [photoLoadError, setPhotoLoadError] = useState(false);
   const showPhoto = removePhoto ? null : preview ?? (photoLoadError ? null : currentPhotoUrl);
 
   return (
