@@ -29,17 +29,25 @@ function displayName(p: Person) {
 }
 
 function PhotoAvatar({ thumbPath, name, dim }: { thumbPath: string | null; name: string; dim?: boolean }) {
-  const cls = `w-14 h-14 rounded-full object-cover bg-gray-100 ${dim ? 'opacity-40 grayscale' : ''}`;
-  if (thumbPath) {
-    return <img src={`/api/uploads/${thumbPath}`} alt={name} className={cls} />;
-  }
-  return (
+  const [imgError, setImgError] = useState(false);
+  const initials = (
     <div
       className={`w-14 h-14 rounded-full bg-indigo-100 flex items-center justify-center text-xl font-bold text-indigo-500 ${dim ? 'opacity-40 grayscale' : ''}`}
     >
       {name[0].toUpperCase()}
     </div>
   );
+  if (thumbPath && !imgError) {
+    return (
+      <img
+        src={`/api/uploads/${thumbPath}`}
+        alt={name}
+        className={`w-14 h-14 rounded-full object-cover bg-gray-100 ${dim ? 'opacity-40 grayscale' : ''}`}
+        onError={() => setImgError(true)}
+      />
+    );
+  }
+  return initials;
 }
 
 export default function GroupDetailPage() {
