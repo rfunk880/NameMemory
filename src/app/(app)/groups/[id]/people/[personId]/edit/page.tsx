@@ -85,7 +85,8 @@ export default function EditPersonPage() {
   }
 
   const currentPhotoUrl = person.photoPath ? `/api/uploads/${person.photoPath}` : null;
-  const showPhoto = removePhoto ? null : preview ?? currentPhotoUrl;
+  const [photoLoadError, setPhotoLoadError] = useState(false);
+  const showPhoto = removePhoto ? null : preview ?? (photoLoadError ? null : currentPhotoUrl);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -122,6 +123,7 @@ export default function EditPersonPage() {
                   src={showPhoto}
                   alt="Preview"
                   className="w-40 h-40 rounded-2xl object-cover mx-auto mb-3"
+                  onError={() => setPhotoLoadError(true)}
                 />
                 <div className="flex gap-2 justify-center">
                   <button
