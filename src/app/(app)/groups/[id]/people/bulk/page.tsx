@@ -75,6 +75,8 @@ function PhotoCell({
   inputRef: (el: HTMLInputElement | null) => void;
 }) {
   const [thumbError, setThumbError] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const localRef = useRef<HTMLInputElement | null>(null);
 
   const showSrc = row.removePhoto
     ? null
@@ -84,24 +86,37 @@ function PhotoCell({
     ? `/api/uploads/${row.existingThumbPath}`
     : null;
 
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) onPick(file);
+  };
+
   return (
-    <div className="relative w-11 h-11">
+    <div
+      className="relative w-11 h-11"
+      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+      onDragEnter={(e) => { e.preventDefault(); setDragOver(true); }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={handleDrop}
+    >
       <input
-        ref={inputRef}
+        ref={(el) => { localRef.current = el; inputRef(el); }}
         type="file"
         accept="image/*"
-        capture="environment"
         className="hidden"
         onChange={(e) => e.target.files?.[0] && onPick(e.target.files[0])}
       />
       <button
         type="button"
-        onClick={() => {
-          const inp = document.querySelector<HTMLInputElement>(`[data-key="${row.key}"]`);
-          inp?.click();
-        }}
-        className="w-11 h-11 rounded-xl overflow-hidden bg-gray-100 hover:bg-gray-200 transition flex items-center justify-center"
-        title="Change photo"
+        onClick={() => localRef.current?.click()}
+        className={`w-11 h-11 rounded-xl overflow-hidden transition flex items-center justify-center ${
+          dragOver
+            ? 'bg-indigo-100 ring-2 ring-indigo-400 ring-offset-1'
+            : 'bg-gray-100 hover:bg-gray-200'
+        }`}
+        title="Click or drop an image"
       >
         {showSrc ? (
           <img
@@ -111,10 +126,10 @@ function PhotoCell({
             onError={() => setThumbError(true)}
           />
         ) : (
-          <span className="text-lg text-gray-400">📷</span>
+          <span className={`text-lg ${dragOver ? 'opacity-60' : 'text-gray-400'}`}>📷</span>
         )}
       </button>
-      {showSrc && (
+      {showSrc && !dragOver && (
         <button
           type="button"
           onClick={onClear}
@@ -280,15 +295,6 @@ export default function BulkAddEditPage() {
                 >
                   {/* Photo */}
                   <td className="px-3 py-2">
-                    <input
-                      ref={(el) => { fileInputs.current[row.key] = el; }}
-                      data-key={row.key}
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      className="hidden"
-                      onChange={(e) => e.target.files?.[0] && setPhoto(row.key, e.target.files[0])}
-                    />
                     <PhotoCell
                       row={row}
                       onPick={(file) => setPhoto(row.key, file)}
