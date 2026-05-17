@@ -242,7 +242,7 @@ export default function GroupDetailPage() {
           <h2 className="font-semibold text-gray-700">People</h2>
           <div className="flex gap-2">
             <Link href={`/groups/${id}/people/bulk`} className="btn-secondary text-sm px-3 py-2">
-              + Bulk Add
+              Bulk Add / Edit
             </Link>
             <Link href={`/groups/${id}/people/new`} className="btn-primary text-sm px-4 py-2">
               + Add Person
